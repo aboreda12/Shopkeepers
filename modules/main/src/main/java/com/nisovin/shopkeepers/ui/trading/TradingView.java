@@ -762,10 +762,15 @@ public class TradingView extends View {
 		int offeredItem2Amount = ItemUtils.getItemStackAmount(offeredItem2);
 		int requiredItem1Amount = ItemUtils.getItemStackAmount(requiredItem1);
 		int requiredItem2Amount = ItemUtils.getItemStackAmount(requiredItem2);
+		// Use strict isSimilar comparison so that enchanted items (e.g. added via an item editor
+		// plugin) are NOT accepted when the trade slot requires a plain, unenchanted item.
+		// Minecraft's native component-predicate check only verifies that the offered item
+		// contains the required components (subset), which would silently accept extra enchants.
+		// isSimilar enforces full metadata equality (type + all meta must match exactly).
 		return (offeredItem1Amount >= requiredItem1Amount
 				&& offeredItem2Amount >= requiredItem2Amount
-				&& Compat.getProvider().matches(offeredItem1, requiredItem1)
-				&& Compat.getProvider().matches(offeredItem2, requiredItem2));
+				&& ItemUtils.isSimilar(requiredItem1, offeredItem1)
+				&& ItemUtils.isSimilar(requiredItem2, offeredItem2));
 	}
 
 	protected final void debugPreventedTrade(String reason) {
